@@ -1,4 +1,4 @@
-A simple script update CloudFlare DDNS for Synology NAS. This script can be
+A simple script to update CloudFlare DDNS for Synology NAS. This script can be
 integrated into Synology NAS UI. It largely refers to
 [official CloudFlare's API example for Python](https://raw.githubusercontent.com/cloudflare/python-cloudflare/master/examples/example_update_dynamic_dns.py)
 
@@ -10,19 +10,30 @@ integrated into Synology NAS UI. It largely refers to
 
 ```
 sudo python3 -m ensurepip
-sudo python3 -m pip install --upgrade pip
-sudo python3 -m pip install "git+https://github.com/butlerx/SynologyCloudflareDDNS.git#egg=synology_cloudflare_ddns"
+sudo python3 -m pip install --upgrade pip setuptools
+sudo python3 -m pip install "git+https://github.com/butlerx/SynologyCloudflareDDNS.git"
 ```
 
-5.  (optional) You can firstly test the script's functionality. Running this
-    script without any arguments gives the usage, like
-    `sudo python3 -m synology_cloudflare_ddns <username> <api_key> <hostname> <ip_address>`
-    `username` is your CloudFlare username, usually the email address you
-    registered in CloudFlare. `api_key` is your personal CloudFlare API key. See
-    [here](https://support.cloudflare.com/hc/en-us/articles/200167836-Where-do-I-find-my-Cloudflare-API-key-)
-    in how to retrive the key.
-6.  Integrate the script into Synology DDNS management interface by adding the
-    following text into `/etc.defaults/ddns_provider.conf`
+# Usage
+
+```
+synology_cloudflare_ddns <email> <api_key> <hostname> <ip_address> [--log-level LEVEL] [--log-format kv|json]
+```
+
+- **email**: (Required for Synology UI compatibility, but not used by this
+  script)
+- **api_key**: Your Cloudflare API key. Find it in your Cloudflare dashboard
+  under 'My Profile' > 'API Tokens'.
+  [Where do I find my Cloudflare API key?](https://support.cloudflare.com/hc/en-us/articles/200167836-Where-do-I-find-my-Cloudflare-API-key-)
+- **hostname**: The domain name to update (e.g., `example.com`).
+- **ip_address**: The IP address to set for the DNS record.
+- **--log-level**: Logging level (default: ERROR).
+- **--log-format**: Log output format: `kv` (key-value, default) or `json`.
+
+# Synology Integration
+
+Integrate the script into Synology DDNS management interface by adding the
+following text into `/etc.defaults/ddns_provider.conf`:
 
 ```
 [Cloudflare]
@@ -30,9 +41,9 @@ sudo python3 -m pip install "git+https://github.com/butlerx/SynologyCloudflareDD
         queryurl=https://www.cloudflare.com/
 ```
 
-7.  Go to DDNS management page in your NAS web UI (control->external
-    access->DDNS). Click Add. And select Cloudflare from the drop-down menu.
-    Fill the three necessary fields which are hostname, username, and
-    password(CloudFlare API Key).
+Go to DDNS management page in your NAS web UI (control->external access->DDNS).
+Click Add. And select Cloudflare from the drop-down menu. Fill the three
+necessary fields which are hostname, username, and password (CloudFlare API
+Key).
 
 That's it. See if the DDNS' IP has been updated in your Cloudflare page.

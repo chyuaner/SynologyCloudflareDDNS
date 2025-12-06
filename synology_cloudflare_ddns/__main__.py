@@ -7,7 +7,7 @@ https://raw.githubusercontent.com/cloudflare/python-cloudflare/master/examples/e
 import logging
 
 from CloudFlare import CloudFlare
-from structlog import get_logger
+from synology_cloudflare_ddns.utils.logger import get_logger
 
 from . import dns
 from .utils import get_args, setup_logger
@@ -79,7 +79,7 @@ def update_records(api_key: str, dns_name: str, ip_address: str):
 
 def main():
     args = get_args()
-    setup_logger(getattr(logging, args.log_level))
+    setup_logger(getattr(logging, args.log_level), log_format=args.log_format)
     exit(update_records(args.api_key, args.hostname, args.ip_address))
 
 

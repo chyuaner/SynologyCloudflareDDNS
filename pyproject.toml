@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "synology-cloudflare-ddns"
+version = "0.1.0"
+description = "A simple script to update CloudFlare DDNS for Synology NAS."
+authors = [{ name = "Cian Butler", email = "butlerx@notthe.cloud" }]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+dependencies = ["python-cloudflare == 2.19.*", "python-json-logger >= 4.0.0"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "License :: OSI Approved :: MIT License",
+]
+
+[project.urls]
+Homepage = "https://github.com/butlerx/SynologyCloudflareDDNS"
+Issues = "https://github.com/butlerx/SynologyCloudflareDDNS/issues"
+
+[project.scripts]
+synology_cloudflare_ddns = "synology_cloudflare_ddns.__main__:main"

@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from CloudFlare import CloudFlare
 from CloudFlare.exceptions import CloudFlareAPIError
-from structlog import get_logger
+from synology_cloudflare_ddns.utils.logger import get_logger
 
 logger = get_logger("dns.zones")
 
