@@ -10,7 +10,7 @@ authors = [{ name = "Cian Butler", email = "butlerx@notthe.cloud" }]
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
-dependencies = ["python-cloudflare == 2.19.*", "python-json-logger >= 4.0.0"]
+dependencies = ["cloudflare == 2.19.*", "python-json-logger >= 4.0.0"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Operating System :: OS Independent",
