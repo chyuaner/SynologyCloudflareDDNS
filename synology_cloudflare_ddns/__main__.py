@@ -53,7 +53,7 @@ def detect_ipv6() -> str:
     return None
 
 
-def update_records(api_key: str, dns_name: str, ip_address: str, email: str = None):
+def update_records(api_key: str, dns_name: str, ip_address: str, email: str = None, proxy: bool = False):
     """main function"""
     original_dns_name = dns_name
     try:
@@ -129,6 +129,7 @@ def update_records(api_key: str, dns_name: str, ip_address: str, email: str = No
                     dns_record["name"],
                     ip_address_type,
                     target_ip,
+                    proxied=dns_record["proxied"],
                 )
                 unchanged = False
                 updated = True
@@ -139,7 +140,7 @@ def update_records(api_key: str, dns_name: str, ip_address: str, email: str = No
                 any_success = True
             else:
                 # No record was updated, so add a new record
-                dns.add_record(cloudflare, zone_id, original_dns_name, ip_address_type, target_ip)
+                dns.add_record(cloudflare, zone_id, original_dns_name, ip_address_type, target_ip, proxied=proxy)
                 any_changed = True
                 any_success = True
 
@@ -184,7 +185,7 @@ def update_records(api_key: str, dns_name: str, ip_address: str, email: str = No
 def main():
     args = get_args()
     setup_logger(getattr(logging, args.log_level), log_format=args.log_format)
-    exit(update_records(args.api_key, args.hostname, args.ip_address, args.email))
+    exit(update_records(args.api_key, args.hostname, args.ip_address, args.email, args.proxy))
 
 
 if __name__ == "__main__":

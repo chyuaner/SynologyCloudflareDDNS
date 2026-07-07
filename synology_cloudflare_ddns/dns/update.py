@@ -14,6 +14,7 @@ def update_record(
     dns_name: str,
     ip_address_type: str,
     ip_address: str,
+    proxied: bool = False,
 ):
     """Yes, we need to update this record - we know it's the same address type"""
 
@@ -21,7 +22,7 @@ def update_record(
         "name": dns_name,
         "type": ip_address_type,
         "content": ip_address,
-        "proxied": True,
+        "proxied": proxied,
     }
     try:
         cf.zones.dns_records.put(zone_id, dns_record_id, data=dns_record)

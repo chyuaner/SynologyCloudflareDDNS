@@ -25,4 +25,9 @@ def get_args():
         default="kv",
         help="log format: kv (default) or json",
     )
+    parser.add_argument(
+        "--proxy",
+        action="store_true",
+        help="Enable Cloudflare proxy (orange cloud) for new records. Existing records preserve their status.",
+    )
     return parser.parse_args()

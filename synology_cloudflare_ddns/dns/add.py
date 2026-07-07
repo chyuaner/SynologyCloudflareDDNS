@@ -8,10 +8,20 @@ logger = get_logger("dns.add")
 
 
 def add_record(
-    cf: CloudFlare, zone_id: str, dns_name: str, ip_address_type: str, ip_address: str
+    cf: CloudFlare,
+    zone_id: str,
+    dns_name: str,
+    ip_address_type: str,
+    ip_address: str,
+    proxied: bool = False,
 ):
     """no exsiting dns record to update - so create dns record"""
-    dns_record = {"name": dns_name, "type": ip_address_type, "content": ip_address}
+    dns_record = {
+        "name": dns_name,
+        "type": ip_address_type,
+        "content": ip_address,
+        "proxied": proxied,
+    }
     try:
         cf.zones.dns_records.post(zone_id, data=dns_record)
     except CloudFlareAPIError as err:
