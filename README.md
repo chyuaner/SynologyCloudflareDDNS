@@ -11,7 +11,7 @@ integrated into Synology NAS UI. It largely refers to
 ```
 sudo python3 -m ensurepip
 sudo python3 -m pip install --upgrade pip setuptools
-sudo python3 -m pip install "git+https://github.com/butlerx/SynologyCloudflareDDNS.git"
+sudo python3 -m pip install "git+https://github.com/chyuaner/SynologyCloudflareDDNS.git"
 ```
 
 # Usage
