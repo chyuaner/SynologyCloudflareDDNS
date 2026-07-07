@@ -16,12 +16,48 @@ from .utils import get_args, setup_logger
 logger = get_logger("synology_cloudflare_ddns")
 
 
+def detect_ipv6() -> str:
+    import urllib.request
+    import socket
+    import ipaddress
+    
+    # Try external API first
+    for url in ["https://api6.ipify.org", "https://v6.ident.me"]:
+        try:
+            req = urllib.request.Request(url)
+            with urllib.request.urlopen(req, timeout=3) as response:
+                ip = response.read().decode("utf-8").strip()
+                ip_obj = ipaddress.IPv6Address(ip)
+                if not ip_obj.is_loopback and not ip_obj.is_link_local:
+                    return str(ip_obj)
+        except Exception:
+            continue
+            
+    # Fallback to local /proc/net/if_inet6
+    try:
+        with open("/proc/net/if_inet6", "r") as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) >= 6:
+                    addr_hex = parts[0]
+                    scope = int(parts[3], 16)
+                    # scope == 0 means Global Unicast
+                    if scope == 0:
+                        blocks = [addr_hex[i:i+4] for i in range(0, 32, 4)]
+                        addr = ":".join(blocks)
+                        ip_obj = ipaddress.IPv6Address(addr)
+                        if not ip_obj.is_loopback and not ip_obj.is_link_local:
+                            return str(ip_obj)
+    except Exception:
+        pass
+    return None
+
+
 def update_records(api_key: str, dns_name: str, ip_address: str, email: str = None):
     """main function"""
     original_dns_name = dns_name
     try:
         zone_name = dns.parse_zone_name(dns_name)
-        ip_address_type = "AAAA" if ":" in ip_address else "A"
 
         # Determine authentication method
         import re
@@ -52,48 +88,70 @@ def update_records(api_key: str, dns_name: str, ip_address: str, email: str = No
 
         zone_id = zones[0]["id"]
 
-        # Fetch records matching this specific subdomain/domain name
-        dns_records = dns.get_dns_records(cloudflare, zone_id, original_dns_name, ip_address_type)
+        # Prepare list of updates to perform
+        # Each update is a tuple: (ip_type, ip_val)
+        updates = []
 
-        updated = False
-        unchanged = True
+        if ":" in ip_address:
+            # The passed IP is IPv6. Update AAAA record.
+            updates.append(("AAAA", ip_address))
+        else:
+            # The passed IP is IPv4. Update A record.
+            updates.append(("A", ip_address))
+            # Also try to auto-detect IPv6 to update AAAA record.
+            ipv6_addr = detect_ipv6()
+            if ipv6_addr:
+                logger.info("Auto-detected IPv6 address", ip=ipv6_addr)
+                updates.append(("AAAA", ipv6_addr))
 
-        # update the record - unless it's already correct
-        for dns_record in dns_records:
-            if ip_address_type != dns_record["type"]:
-                continue
+        any_changed = False
+        any_success = False
 
-            if ip_address == dns_record["content"]:
-                updated = True
-                continue
-            dns.update_record(
-                cloudflare,
-                zone_id,
-                dns_record["id"],
-                dns_record["name"],
-                ip_address_type,
-                ip_address,
-            )
-            unchanged = False
-            updated = True
+        for ip_address_type, target_ip in updates:
+            # Fetch records matching this specific subdomain/domain name
+            dns_records = dns.get_dns_records(cloudflare, zone_id, original_dns_name, ip_address_type)
 
-        if updated:
-            if unchanged:
-                logger.info(
-                    "No Change required",
-                    name=original_dns_name,
-                    type=ip_address_type,
-                    address=ip_address,
+            updated = False
+            unchanged = True
+
+            # update the record - unless it's already correct
+            for dns_record in dns_records:
+                if ip_address_type != dns_record["type"]:
+                    continue
+
+                if target_ip == dns_record["content"]:
+                    updated = True
+                    continue
+                dns.update_record(
+                    cloudflare,
+                    zone_id,
+                    dns_record["id"],
+                    dns_record["name"],
+                    ip_address_type,
+                    target_ip,
                 )
-                print("nochg")
-            else:
-                print("good")
-            return 0
+                unchanged = False
+                updated = True
 
-        # No record was updated, so add a new record
-        dns.add_record(cloudflare, zone_id, original_dns_name, ip_address_type, ip_address)
-        print("good")
-        return 0
+            if updated:
+                if not unchanged:
+                    any_changed = True
+                any_success = True
+            else:
+                # No record was updated, so add a new record
+                dns.add_record(cloudflare, zone_id, original_dns_name, ip_address_type, target_ip)
+                any_changed = True
+                any_success = True
+
+        if any_success:
+            if any_changed:
+                print("good")
+            else:
+                print("nochg")
+            return 0
+        else:
+            print("system")
+            return 2
 
     except CloudFlareAPIError as err:
         try:
