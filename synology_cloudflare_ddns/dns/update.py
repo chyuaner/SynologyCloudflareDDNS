@@ -34,4 +34,5 @@ def update_record(
             dns_record_id=dns_record_id,
             method="zones.dns_records.put",
         )
+        raise err
     logger.info("DNS record updated", **dns_record)

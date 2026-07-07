@@ -17,11 +17,12 @@ def get_zones(cf: CloudFlare, zone_name: str) -> List[Dict[str, str]]:
         logger.error(
             "bad authentication", method="zones.get", zone_name=zone_name, err=err
         )
+        raise err
     except Exception as err:
         logger.error(
             "api call failed", method="zones.get", zone_name=zone_name, err=err
         )
-    return []
+        raise err
 
 
 def parse_zone_name(dns_name: str) -> str:

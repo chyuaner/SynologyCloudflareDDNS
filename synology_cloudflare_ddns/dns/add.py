@@ -21,4 +21,5 @@ def add_record(
             **dns_record,
             err=err,
         )
+        raise err
     logger.info("DNS record added", **dns_record)

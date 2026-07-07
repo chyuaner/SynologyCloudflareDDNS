@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from pythonjsonlogger import orjson
+from pythonjsonlogger.json import JsonFormatter
 
 if TYPE_CHECKING:
     from typing import Any
@@ -74,7 +74,7 @@ class KeyValueLogFormatter(logging.Formatter):
 def setup_logger(level=logging.INFO, log_format="kv"):
     handler = logging.StreamHandler()
     if log_format == "json":
-        handler.setFormatter(orjson.OrjsonFormatter)
+        handler.setFormatter(JsonFormatter())
     else:
         handler.setFormatter(KeyValueLogFormatter())
     root_logger = logging.getLogger()

@@ -10,12 +10,12 @@ logger = get_logger("dns.get")
 
 
 def get_dns_records(
-    cf: CloudFlare, zone_id: str, ip_address_type: str
+    cf: CloudFlare, zone_id: str, dns_name: str, ip_address_type: str
 ) -> List[Dict[str, str]]:
     """get dns record"""
     try:
         return cf.zones.dns_records.get(
-            zone_id, params={"match": "all", "type": ip_address_type}
+            zone_id, params={"name": dns_name, "match": "all", "type": ip_address_type}
         )
     except CloudFlareAPIError as err:
         logger.error(
@@ -25,4 +25,4 @@ def get_dns_records(
             ip_address_type=ip_address_type,
             zone_id=zone_id,
         )
-        return []
+        raise err
